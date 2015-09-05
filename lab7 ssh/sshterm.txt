@@ -1,0 +1,9 @@
+  555  ssh-keygen
+  556  chmod 700 ~/.ssh
+  557* 
+  558  ssh -p 3390 student@195.19.53.94
+  559  ssh-copy-id -p 3390 student@195.19.53.94
+  560  ssh -p 3390 student@195.19.53.94
+  561  ssh -p 3390 student@195.19.53.94 mkdir volkova
+  562  ssh -p 3390 student@195.19.53.94
+  563  history 9 >sshterm.txt

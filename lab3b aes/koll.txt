@@ -1,0 +1,23 @@
+H(x, y) = AES(x, x) XOR AES(x, y) XOR x
+
+Возьмём любое x. Тогда возьмём у = AES^(-1)(x, x XOR AES(x, x)).
+Тогда H = 0.
+Все пары такого вида образуют коллизии
+
+x1                      = 000102030405060708090a0b0c0d0e0f
+aes(x1, x1)             = 0a940bb5416ef045f1c39458c653ea5a
+
+aes(x1, x1) xor x1      = 0a9509b6456bf642f9ca9e53ca5ee455
+y1                      = 42e2d9bc33df0386213ffea06ae4ff21
+aes(x1, y1)             = 0a9509b6456bf642f9ca9e53ca5ee455
+H(x1, y1)               = 0
+
+x2                      = 00112233445566778899aabbccddeeff
+aes(x2, x2)             = 62f679be2bf0d931641e039ca3401bb2
+
+aes(x2, x2) xor x2      = 62e75b8d6fa5bf46ec87a9276f9df54d
+
+y2                      = d081f9fa276fe9722eb8c7c8a01ae5d1
+aes(x2, y2)             = 62e75b8d6fa5bf46ec87a9276f9df54d
+
+H(x2, y2) = H(x1, y1)   = 0
