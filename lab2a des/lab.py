@@ -1,52 +1,55 @@
 import sys, string
+from Crypto.Cipher import DES as des
 
-def to64bite(s):
+def toblocklen(s):
     return s + "0"*(16-len(s))
 
-
 def bytesfromstring(s):
-    b = []
-    
+    b = ""
     for i in range(0, len(s), 2):
-        b.append(int(s[i:i+2], 16))
-
+        b += chr(int(s[i:i+2], 16)) 
     return b
 
-def stringfrombytes(bytes):
-    s = ""
-
-    for b in bytes:
-        s += str(hex(b))[2:]
-
-    return s
-
 def madekey(number):
-
-    f = ["00000001", "00000001", "00000001", "00000001", "00000001", "00000001", "00000001", "00000001"]
-    b = bin(number)[2:]
-
+    f = []
+    b = format(number, "028b")
     for i in range(4):
+        f.append(b[:7])
+        f[-1]+= str( (f[-1].count('1') + 1) % 2)
+        b     = b[7:]
+    return format( int(string.join(f, ""), 2), "08x" )
 
-        if len(b):
-            f[7 - i] = string.zfill(b[-7:], 7)
-            f[7 - i] += str( (f[7 - i].count('1') + 1) % 2 )
-            b = b[:-7]
+class CryptKey(dict):
+    def __missing__(self, key):
+        return -1
 
-    return int(string.join(f, ""), 2)
-
+class Des2middle(object):
+    def __init__(self, m1, m2):
+        self.m1      = m1
+        self.m2      = m2
+    def get_encode(self, key):
+        cipher = des.new(b"\x01\x01\x01\x01" + key, 1)
+        return cipher.encrypt(self.m1)
+    def get_decode(self, key):
+        cipher = des.new(b"\x01\x01\x01\x01" + key, 1)
+        return cipher.decrypt(self.m2)
+    def decode_all(self):
+        LL28 = 2**28
+        encodes = CryptKey()
+        for i in range(LL28):
+            encodes[self.get_encode( bytesfromstring(madekey(i)) )] = i
+        for i in range(LL28):
+            decode = self.get_decode( bytesfromstring(madekey(i)) )
+            if encodes[decode] != -1:
+                return madekey(encodes[decode]), madekey(i)
+        return "ff", "ff"
 
 def main():
+    m1 = bytesfromstring(toblocklen(sys.argv[1]))
+    m2 = bytesfromstring(toblocklen(sys.argv[2]))
     
-    m = bin(int( to64bite( sys.argv[1] ), 16))
-    c = bin(int(  sys.argv[2] , 16))
-
-    print m, c
-
-    k = []
-
-    for i in range(2**28):
-        k.append(madekey(i))
-        if not i % 10000000:
-            print hex(k[i]), i
-
+    des2 = Des2middle(m1, m2)
+    
+    print "01010101%s01010101%s" % des2.decode_all()
+    
 main()
